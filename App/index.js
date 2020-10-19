@@ -83,6 +83,8 @@ const initialState = {
   data: [],
   moveCount: 0,
   selectedIndices: [],
+  currentImage: null,
+  matchedPairs: [],
 };
 
 class App extends React.Component {
@@ -129,9 +131,9 @@ class App extends React.Component {
 
   };
 
-  handleCardPress = (cardId) => {
+  handleCardPress = (cardId, image) => {
     let callWithUserParams = false;
-    this.setState(({ selectedIndices }) => {
+    this.setState(({ selectedIndices, currentImage, matchedPairs, moveCount }) => {
       // Changing states
       const nextState = {};
 
@@ -141,6 +143,22 @@ class App extends React.Component {
         return { selectedIndices: [] };
       }
 
+      // track moves
+      nextState.moveCount = moveCount + 1;
+
+      // if card is visible
+      if (selectedIndices.length === 1) {
+        // if shown card === recently picked card (and not the same cardId)
+        if (image === currentImage && !selectedIndices.includes(cardId)) {
+          // there's a match
+          nextState.currentImage = null;
+          nextState.matchedPairs = [...matchedPairs, image];
+        }
+      } else {
+        // if card isn't visible
+        nextState.currentImage = image;
+      }
+
       // copies contents with cardId
       nextState.selectedIndices = [...selectedIndices, cardId];
 
@@ -148,7 +166,7 @@ class App extends React.Component {
     }, () => {
       if (callWithUserParams) {
         // call it again when 3rd card is pressed
-        this.handleCardPress(cardId);
+        this.handleCardPress(cardId, image);
       }
     });
   };
@@ -167,9 +185,9 @@ class App extends React.Component {
                 return (
                   <Card
                     key={cardId}
-                    onPress={() => this.handleCardPress(cardId)}
+                    onPress={() => this.handleCardPress(cardId, card.image)}
                     image={card.image}
-                    isVisible={this.state.selectedIndices.includes(cardId)}
+                    isVisible={this.state.selectedIndices.includes(cardId) || this.state.matchedPairs.includes(card.image)}
                   />
                 );
               })}
