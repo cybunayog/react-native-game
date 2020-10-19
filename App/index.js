@@ -130,13 +130,27 @@ class App extends React.Component {
   };
 
   handleCardPress = (cardId) => {
-    this.setState(state => {
+    let callWithUserParams = false;
+    this.setState(({ selectedIndices }) => {
+      // Changing states
       const nextState = {};
 
-      nextState.selectedIndices = [...state.selectedIndices, cardId];
+      if (selectedIndices.length > 1) {
+        // limit user to pick 2 cards and resets card selection
+        callWithUserParams = true;
+        return { selectedIndices: [] };
+      }
+
+      // copies contents with cardId
+      nextState.selectedIndices = [...selectedIndices, cardId];
 
       return nextState
-    })
+    }, () => {
+      if (callWithUserParams) {
+        // call it again when 3rd card is pressed
+        this.handleCardPress(cardId);
+      }
+    });
   };
 
   render() {
